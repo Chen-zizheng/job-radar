@@ -2,6 +2,9 @@
 
 一个自动抓取牛客网校招岗位、结合个人简历进行 AI 智能匹配打分的本地工具。
 
+<img width="1262" height="703" alt="image" src="https://github.com/user-attachments/assets/f45fddab-a101-49cf-be1a-923991874f2f" />
+<img width="1271" height="703" alt="image" src="https://github.com/user-attachments/assets/e3e0f7cf-1a34-4d07-91c6-0167d045d6b7" />
+
 ## 功能亮点
 
 - **自动抓取**：定时从牛客网聚合最新校招岗位信息
@@ -24,7 +27,3 @@
 ```bash
 git clone https://github.com/Chen-zizheng/job-radar.git
 cd job-radar
-
-<img width="1262" height="703" alt="image" src="https://github.com/user-attachments/assets/f45fddab-a101-49cf-be1a-923991874f2f" />
-<img width="1271" height="703" alt="image" src="https://github.com/user-attachments/assets/e3e0f7cf-1a34-4d07-91c6-0167d045d6b7" />
-
