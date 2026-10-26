@@ -1,0 +1,10 @@
+# 不要把密钥或登录态提交上来
+.env
+.env.*
+cookies.txt
+# 运行产物
+output.json
+scored.json
+*.log
+__pycache__/
+.pytest_cache/
