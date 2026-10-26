@@ -8,3 +8,4 @@ scored.json
 *.log
 __pycache__/
 .pytest_cache/
+tests/_tmp/

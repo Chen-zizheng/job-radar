@@ -45,7 +45,7 @@ cd job-radar
 ### 2. 安装依赖
 
 ```bash
-pip install requests streamlit openai
+pip install -r requirements.txt
 ```
 
 ### 3. 准备三样东西
@@ -75,12 +75,43 @@ streamlit run app.py    # 打开筛选界面
 
 Windows 用户也可以直接双击 `一键启动.bat`。
 
+## 接口测试
+
+`api.py` 是之上的 HTTP 接口层（FastAPI），把 `scored.json` 暴露成可分页、可过滤的 REST 接口：
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+uvicorn api:app --reload --port 8000     # 启动服务
+pytest tests -q                          # 24 条接口用例，全部离线可跑
+```
+
+| 方法 | 路径 | 鉴权 | 说明 |
+|---|---|---|---|
+| GET | `/health` | — | 服务与数据量探活 |
+| GET | `/api/companies` | — | 分页 + 最低分 + 方向 + 只看建议 |
+| GET | `/api/companies/{company}` | — | 单公司详情，不存在返回 404 |
+| POST | `/api/scores` | `X-API-Key` | 写入/更新一条评估结果 |
+
+用例设计（等价类 / 边界值 / 鉴权×参数组合）与每条用例的预期写在
+[`docs/接口测试用例.md`](docs/接口测试用例.md)，共 **24 条**，覆盖：
+
+- 分页切分不重不漏、页码越界返回空列表而非报错
+- `page` / `page_size` / `min_score` 的上下界越界一律 422
+- 查询条件不存在时返回 200 + 空列表（**不是 404**，这是业务语义决定的）
+- 写接口的无 key / 错 key / 缺字段 / 服务端未配置 key 四条分支
+- 同名公司重复提交是更新而非追加（幂等）
+
+CI 在 `.github/workflows/test.yml`，每次 push 跑 `pytest tests -q`。
+
 ## 目录结构
 
 ```text
 config.py        # 接口地址、请求头、分页参数
 spider.py        # 抓取与翻页
 ai_scorer.py     # 关键词粗筛 + 公司粒度增量评分 + 容错解析
+api.py           # FastAPI 接口层
+tests/           # 接口测试
+docs/            # 接口测试用例设计
 app.py           # Streamlit 界面
 一键启动.bat      # Windows 一键跑全流程
 output.json      # 抓取结果（生成物）
@@ -95,8 +126,10 @@ scored.json      # 评估结果（生成物）
   登录态过期后需要重新复制 Cookie。接口字段变更也会直接导致抓取失败。
 - **抓取是「半自动」而非严格爬虫**：分页靠 `config.py` 里的 `PAGE_PARAMS` 驱动，`MAX_PAGES` 默认只翻 3 页。
 - **`一键启动.bat` 仅 Windows**：macOS / Linux 请按上面三步手动跑。
-- **没有自动化测试**：`ai_scorer.py` 里的 JSON 容错解析、公司粒度去重是最该被测的两段逻辑，
-  目前只有人工验证。这是下一个要补的缺口。
+- **接口层无并发保护**：`save_companies` 是全量覆盖写，并发写入会丢更新，这是已知缺陷，
+  应该在写路径加文件锁或用真正的数据库。
+- **`ai_scorer.py` 的容错解析仍缺单测**：`api.py` 已有 24 条接口用例，但模型返回解析、
+  公司粒度去重这两段目前只有人工验证。
 - **评分依赖模型判断**：同一份简历重复跑，分数会有小幅波动，不适合当绝对标准。
 
 ---
